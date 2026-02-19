@@ -1,88 +1,351 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wie mag beginnen?</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wie mag beginnen?</title>
 
-<style>
-body{
-  margin:0;
-  font-family:-apple-system, sans-serif;
-  background:#0b0f1a;
-  color:white;
-  display:grid;
-  place-items:center;
-  min-height:100vh;
-}
-.app{
-  width:90%;
-  max-width:500px;
-  background:rgba(255,255,255,0.08);
-  padding:20px;
-  border-radius:18px;
-}
-button{
-  padding:12px 18px;
-  border-radius:12px;
-  border:none;
-  font-weight:bold;
-  cursor:pointer;
-  background:#2b6cff;
-  color:white;
-  margin:5px;
-}
-.ghost{
-  background:rgba(255,255,255,0.15);
-}
-.name{
-  font-size:34px;
-  font-weight:900;
-}
-textarea{
-  width:100%;
-  height:100px;
-  background:rgba(0,0,0,0.3);
-  color:white;
-  border-radius:10px;
-  border:none;
-  padding:10px;
-}
-</style>
+  <!-- Optioneel: zet hier jouw icoon-link (directe .png) -->
+  <!-- <link rel="apple-touch-icon" href="https://i.imgur.com/XXXXXXX.png"> -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: #0b0f1a;
+      color: #e9eefc;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+    }
+    .app {
+      width: min(520px, calc(100vw - 24px));
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+      position: relative;
+      overflow: hidden;
+    }
+    h1 { margin: 4px 0 10px; font-size: 22px; font-weight: 800; }
+    .sub { opacity: .8; font-size: 13px; margin-bottom: 12px; }
+
+    .result {
+      margin: 12px 0 16px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.12);
+      text-align: center;
+    }
+    .name {
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      line-height: 1.1;
+      margin: 0;
+      min-height: 40px;
+    }
+    .hint { margin: 8px 0 0; opacity: .75; font-size: 13px; }
+
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 800;
+      cursor: pointer;
+      background: #2b6cff;
+      color: white;
+      flex: 1;
+      min-width: 160px;
+      transition: transform .08s ease, opacity .2s ease;
+    }
+    button:active { transform: scale(0.98); }
+    button[disabled] { opacity: .5; cursor: not-allowed; }
+
+    .ghost {
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #e9eefc;
+      flex: 0 0 auto;
+      min-width: 120px;
+    }
+
+    .namesBox {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      resize: vertical;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.25);
+      color: #e9eefc;
+      padding: 10px;
+      font-weight: 600;
+      outline: none;
+      box-sizing: border-box;
+    }
+    label { display: inline-flex; gap: 10px; align-items: center; font-size: 13px; opacity: .85; }
+    input[type="checkbox"] { transform: scale(1.15); }
+
+    canvas#confetti {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .shake { animation: shake 650ms ease-in-out; }
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      10% { transform: translateX(-6px); }
+      20% { transform: translateX(6px); }
+      30% { transform: translateX(-5px); }
+      40% { transform: translateX(5px); }
+      50% { transform: translateX(-4px); }
+      60% { transform: translateX(4px); }
+      70% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
+      90% { transform: translateX(-2px); }
+      100% { transform: translateX(0); }
+    }
+
+    .tiny {
+      margin-top: 10px;
+      opacity: .65;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+  </style>
 </head>
 <body>
-<div class="app" id="app">
-  <canvas id="confetti"></canvas>
-  <h1>Wie mag beginnen?</h1>
-  <div class="sub">Druk op “Draai” en hij kiest random.</div>
+  <div class="app" id="app">
+    <canvas id="confetti"></canvas>
+    <h1>Wie mag beginnen?</h1>
+    <div class="sub">Druk op “Draai” en hij kiest random. Pas namen aan als je wil.</div>
 
-  <div class="result" id="resultBox">
-    <p class="name" id="pickedName">—</p>
-    <p class="hint" id="pickedHint">Klaar? Draai maar.</p>
-  </div>
+    <div class="result" id="resultBox">
+      <p class="name" id="pickedName">—</p>
+      <p class="hint" id="pickedHint">Klaar? Draai maar.</p>
+    </div>
 
-  <div class="row">
-    <button id="spinBtn">🎲 Draai</button>
-    <button class="ghost" id="resetBtn">Reset</button>
-  </div>
+    <div class="row">
+      <button id="spinBtn">🎲 Draai</button>
+      <button class="ghost" id="resetBtn" title="Reset naar standaard">Reset</button>
+    </div>
 
-  <div class="namesBox">
-    <label>
-      <input type="checkbox" id="noRepeat" checked>
-      Niet 2x dezelfde achter elkaar
-    </label>
-    <br><br>
-    <label>
-      <input type="checkbox" id="sound">
-      Geluid
-    </label>
-    <br><br>
-    <textarea id="namesInput" spellcheck="false">Mama
+    <div class="namesBox">
+      <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
+        <label><input type="checkbox" id="noRepeat" checked> Niet 2x dezelfde achter elkaar</label>
+        <label><input type="checkbox" id="sound"> Geluid</label>
+      </div>
+      <textarea id="namesInput" spellcheck="false">Mama
 Papa
 Nora
 Indy</textarea>
+      <div class="tiny">Tip: zet 1 naam per regel. Lege regels worden genegeerd.</div>
+    </div>
   </div>
-</div>
+
+  <script>
+    const DEFAULT_NAMES = ["Mama", "Papa", "Nora", "Indy"];
+
+    const app = document.getElementById("app");
+    const spinBtn = document.getElementById("spinBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const namesInput = document.getElementById("namesInput");
+    const pickedNameEl = document.getElementById("pickedName");
+    const pickedHintEl = document.getElementById("pickedHint");
+    const noRepeatEl = document.getElementById("noRepeat");
+    const soundEl = document.getElementById("sound");
+
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+    let confettiPieces = [];
+    let confettiActive = false;
+    let lastPick = null;
+
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(app.clientWidth * dpr);
+      canvas.height = Math.floor(app.clientHeight * dpr);
+      canvas.style.width = app.clientWidth + "px";
+      canvas.style.height = app.clientHeight + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    let audioCtx = null;
+    function beep(freq = 880, duration = 0.07) {
+      if (!soundEl.checked) return;
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = "square";
+        o.frequency.value = freq;
+        g.gain.value = 0.02;
+        o.connect(g);
+        g.connect(audioCtx.destination);
+        o.start();
+        setTimeout(() => { o.stop(); }, duration * 1000);
+      } catch (e) {}
+    }
+
+    function getNames() {
+      const lines = namesInput.value
+        .split("\n")
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const seen = new Set();
+      const uniq = [];
+      for (const n of lines) {
+        const key = n.toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          uniq.push(n);
+        }
+      }
+      return uniq;
+    }
+
+    function setDefaultNames() {
+      namesInput.value = DEFAULT_NAMES.join("\n");
+    }
+
+    function pickRandom(names) {
+      if (!names.length) return null;
+      if (!noRepeatEl.checked || names.length === 1 || lastPick == null) {
+        return names[Math.floor(Math.random() * names.length)];
+      }
+      let candidate = lastPick;
+      let guard = 0;
+      while (candidate === lastPick && guard < 50) {
+        candidate = names[Math.floor(Math.random() * names.length)];
+        guard++;
+      }
+      return candidate;
+    }
+
+    function animatePick(finalName) {
+      const names = getNames();
+      const steps = Math.min(18, Math.max(8, names.length * 2));
+      let i = 0;
+
+      spinBtn.disabled = true;
+      pickedHintEl.textContent = "Aan het draaien...";
+      app.classList.remove("shake");
+      void app.offsetWidth;
+      app.classList.add("shake");
+
+      const timer = setInterval(() => {
+        const n = names[Math.floor(Math.random() * names.length)];
+        pickedNameEl.textContent = n || "—";
+        beep(600 + (i * 20), 0.03);
+        i++;
+        if (i >= steps) {
+          clearInterval(timer);
+          pickedNameEl.textContent = finalName;
+          pickedHintEl.textContent = "Begint maar. Geen discussies 😄";
+          beep(1200, 0.08);
+          launchConfetti();
+          spinBtn.disabled = false;
+        }
+      }, 70);
+    }
+
+    function launchConfetti() {
+      confettiPieces = [];
+      confettiActive = true;
+
+      const w = app.clientWidth;
+      const h = app.clientHeight;
+      const count = 140;
+
+      for (let i = 0; i < count; i++) {
+        confettiPieces.push({
+          x: Math.random() * w,
+          y: -10 - Math.random() * h * 0.3,
+          vx: (Math.random() - 0.5) * 2.6,
+          vy: 2.2 + Math.random() * 3.2,
+          r: 2 + Math.random() * 4,
+          rot: Math.random() * Math.PI,
+          vr: (Math.random() - 0.5) * 0.2,
+          life: 220 + Math.random() * 120
+        });
+      }
+      requestAnimationFrame(confettiTick);
+    }
+
+    function confettiTick() {
+      if (!confettiActive) return;
+      const w = app.clientWidth;
+      const h = app.clientHeight;
+
+      ctx.clearRect(0, 0, w, h);
+
+      confettiPieces.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        p.vx *= 0.995;
+        p.vy *= 0.998;
+        p.life -= 1;
+
+        if (p.x < -20) p.x = w + 20;
+        if (p.x > w + 20) p.x = -20;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.globalAlpha = Math.max(0, Math.min(1, p.life / 180));
+        ctx.fillStyle = `hsl(${Math.floor((p.x / w) * 360)}, 90%, 60%)`;
+        ctx.fillRect(-p.r, -p.r, p.r * 2.2, p.r * 1.3);
+        ctx.restore();
+      });
+
+      confettiPieces = confettiPieces.filter(p => p.y < h + 30 && p.life > 0);
+
+      if (confettiPieces.length === 0) {
+        confettiActive = false;
+        ctx.clearRect(0, 0, w, h);
+        return;
+      }
+      requestAnimationFrame(confettiTick);
+    }
+
+    spinBtn.addEventListener("click", () => {
+      const names = getNames();
+      if (!names.length) {
+        pickedNameEl.textContent = "—";
+        pickedHintEl.textContent = "Zet eerst wat namen in het vak 🙂";
+        return;
+      }
+      const finalName = pickRandom(names);
+      lastPick = finalName;
+      animatePick(finalName);
+    });
+
+    resetBtn.addEventListener("click", () => {
+      setDefaultNames();
+      lastPick = null;
+      pickedNameEl.textContent = "—";
+      pickedHintEl.textContent = "Klaar? Draai maar.";
+    });
+
+    setDefaultNames();
+  </script>
 </body>
 </html>

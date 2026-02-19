@@ -1,0 +1,32 @@
+<div class="app" id="app">
+  <canvas id="confetti"></canvas>
+  <h1>Wie mag beginnen?</h1>
+  <div class="sub">Druk op “Draai” en hij kiest random.</div>
+
+  <div class="result" id="resultBox">
+    <p class="name" id="pickedName">—</p>
+    <p class="hint" id="pickedHint">Klaar? Draai maar.</p>
+  </div>
+
+  <div class="row">
+    <button id="spinBtn">🎲 Draai</button>
+    <button class="ghost" id="resetBtn">Reset</button>
+  </div>
+
+  <div class="namesBox">
+    <label>
+      <input type="checkbox" id="noRepeat" checked>
+      Niet 2x dezelfde achter elkaar
+    </label>
+    <br><br>
+    <label>
+      <input type="checkbox" id="sound">
+      Geluid
+    </label>
+    <br><br>
+    <textarea id="namesInput" spellcheck="false">Mama
+Papa
+Nora
+Indy</textarea>
+  </div>
+</div>

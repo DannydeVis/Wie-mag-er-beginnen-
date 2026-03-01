@@ -211,21 +211,42 @@
     }
 
     .sheet-puller {
-      padding: 10px 0 0;
-      text-align: center;
+      padding: 10px 20px 12px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
       cursor: pointer;
-      /* extend touch area upward */
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
       background: transparent;
+      /* big touch target */
+      min-height: 58px;
     }
     .sheet-handle {
       width: 38px; height: 5px;
       border-radius: 3px;
       background: rgba(255,255,255,.30);
-      margin: 0 auto;
-      transition: background .2s;
+      transition: background .2s, transform .2s;
     }
     .sheet-wrap.open .sheet-handle {
-      background: rgba(255,255,255,.45);
+      background: rgba(255,255,255,.50);
+      transform: scaleX(.7);
+    }
+    .sheet-puller-label {
+      font-size: 13px; font-weight: 600;
+      color: rgba(235,235,245,.50);
+      letter-spacing: .2px;
+      display: flex; align-items: center; gap: 5px;
+      transition: color .2s;
+    }
+    .sheet-wrap.open .sheet-puller-label {
+      color: rgba(235,235,245,.25);
+    }
+    .sheet-chevron {
+      display: inline-block;
+      transition: transform .42s cubic-bezier(.32,.72,0,1);
+    }
+    .sheet-wrap.open .sheet-chevron {
+      transform: rotate(180deg);
     }
 
     .sheet-body {
@@ -444,6 +465,10 @@
     <div class="sheet-wrap" id="sheetWrap">
       <div class="sheet-puller" id="sheetPuller">
         <div class="sheet-handle"></div>
+        <span class="sheet-puller-label">
+          Namen &amp; instellingen
+          <span class="sheet-chevron">↑</span>
+        </span>
       </div>
       <div class="sheet-body">
         <div class="sheet-header">
@@ -504,7 +529,11 @@ Indy</textarea>
       sheetOpen = open;
       sheetWrap.classList.toggle("open", open);
     }
+
+    // Tap the puller bar to toggle
     sheetPuller.addEventListener("click", () => setSheet(!sheetOpen));
+
+    // Close when tapping outside
     document.addEventListener("click", e => {
       if (sheetOpen &&
           !sheetWrap.contains(e.target) &&
@@ -512,6 +541,23 @@ Indy</textarea>
         setSheet(false);
       }
     });
+
+    // Swipe up/down gesture on the sheet
+    let touchStartY = null;
+    let touchStartOpen = false;
+    sheetWrap.addEventListener("touchstart", e => {
+      touchStartY    = e.touches[0].clientY;
+      touchStartOpen = sheetOpen;
+    }, { passive: true });
+
+    sheetWrap.addEventListener("touchend", e => {
+      if (touchStartY === null) return;
+      const dy = touchStartY - e.changedTouches[0].clientY; // positive = swiped up
+      if (Math.abs(dy) > 30) {
+        setSheet(dy > 0); // swipe up → open, swipe down → close
+      }
+      touchStartY = null;
+    }, { passive: true });
 
     // ── Confetti canvas ───────────────────────────────────────
     const canvas = document.getElementById("confetti");

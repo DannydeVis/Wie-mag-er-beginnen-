@@ -2,352 +2,693 @@
 <html lang="nl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Wie begint?" />
+  <link rel="apple-touch-icon" href="https://i.imgur.com/R61jX78.png" />
   <title>Wie mag beginnen?</title>
-
-  <!-- Optioneel: zet hier jouw icoon-link (directe .png) -->
-  <link rel="apple-touch-icon" href="https://i.imgur.com/R61jX78.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
   <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      background: #0b0f1a;
-      color: #e9eefc;
-      display: grid;
-      place-items: center;
-      min-height: 100vh;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:    #0A84FF;
+      --green:   #30D158;
+      --red:     #FF453A;
+      --purple:  #BF5AF2;
+      --orange:  #FF9F0A;
+      --teal:    #5AC8FA;
+      --text1:   #FFFFFF;
+      --text2:   rgba(235,235,245,0.60);
+      --text3:   rgba(235,235,245,0.30);
+      --sep:     rgba(84,84,88,0.55);
+      --safe-t:  env(safe-area-inset-top,    44px);
+      --safe-b:  env(safe-area-inset-bottom, 34px);
+      --safe-l:  env(safe-area-inset-left,   0px);
+      --safe-r:  env(safe-area-inset-right,  0px);
     }
-    .app {
-      width: min(520px, calc(100vw - 24px));
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 18px;
-      padding: 18px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.45);
-      position: relative;
+
+    html, body {
+      height: 100%; width: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: -apple-system, "SF Pro Display", "SF Pro Text",
+                   BlinkMacSystemFont, system-ui, sans-serif;
+      color: var(--text1);
+      -webkit-text-size-adjust: 100%;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Animated backdrop ─────────────────────────────────── */
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 90% 55% at 15% 15%,
+          rgba(10,132,255,.38) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 60% at 85% 80%,
+          rgba(191,90,242,.28) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 45% at 55% 100%,
+          rgba(255,159,10,.18) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 90% 10%,
+          rgba(48,209,88,.15) 0%, transparent 55%),
+        #00050f;
+      animation: bgPulse 10s ease-in-out infinite alternate;
+    }
+    @keyframes bgPulse {
+      0%   { filter: hue-rotate(0deg)   brightness(1);   }
+      100% { filter: hue-rotate(15deg)  brightness(1.08); }
+    }
+
+    /* ─── App shell ─────────────────────────────────────────── */
+    .shell {
+      position: fixed; inset: 0; z-index: 1;
+      display: flex; flex-direction: column;
+      padding-top:    var(--safe-t);
+      padding-bottom: var(--safe-b);
+      padding-left:   var(--safe-l);
+      padding-right:  var(--safe-r);
+    }
+
+    /* ─── Navigation bar (iOS 26 floating style) ────────────── */
+    .navbar {
+      padding: 14px 20px 10px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .navbar-title {
+      font-size: 17px; font-weight: 600;
+      letter-spacing: -.35px;
+      color: var(--text1);
+    }
+
+    /* ─── Main stage ────────────────────────────────────────── */
+    .stage {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 0 20px 12px;
+      gap: 18px;
       overflow: hidden;
     }
-    h1 { margin: 4px 0 10px; font-size: 22px; font-weight: 800; }
-    .sub { opacity: .8; font-size: 13px; margin-bottom: 12px; }
 
-    .result {
-      margin: 12px 0 16px;
-      padding: 14px;
-      border-radius: 14px;
-      background: rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.12);
+    /* ─── Result card (Liquid Glass) ────────────────────────── */
+    .result-card {
+      width: 100%; max-width: 420px;
+      background: rgba(255,255,255,.08);
+      backdrop-filter: blur(48px) saturate(200%) brightness(1.1);
+      -webkit-backdrop-filter: blur(48px) saturate(200%) brightness(1.1);
+      border-radius: 32px;
+      border: 1px solid rgba(255,255,255,.18);
+      padding: 40px 28px 36px;
       text-align: center;
+      position: relative; overflow: hidden;
+      box-shadow:
+        0 28px 80px rgba(0,0,0,.55),
+        inset 0 1.5px 0 rgba(255,255,255,.25),
+        inset 0 -1px 0 rgba(255,255,255,.06);
     }
-    .name {
-      font-size: 34px;
-      font-weight: 900;
-      letter-spacing: .2px;
-      line-height: 1.1;
-      margin: 0;
-      min-height: 40px;
+    /* Liquid shimmer at top */
+    .result-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 50%;
+      background: radial-gradient(
+        ellipse 80% 60% at 50% 0%,
+        rgba(255,255,255,.10) 0%, transparent 70%
+      );
+      border-radius: inherit;
+      pointer-events: none;
     }
-    .hint { margin: 8px 0 0; opacity: .75; font-size: 13px; }
-
-    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    button {
-      appearance: none;
-      border: 0;
-      border-radius: 14px;
-      padding: 12px 14px;
-      font-weight: 800;
-      cursor: pointer;
-      background: #2b6cff;
-      color: white;
-      flex: 1;
-      min-width: 160px;
-      transition: transform .08s ease, opacity .2s ease;
-    }
-    button:active { transform: scale(0.98); }
-    button[disabled] { opacity: .5; cursor: not-allowed; }
-
-    .ghost {
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.18);
-      color: #e9eefc;
-      flex: 0 0 auto;
-      min-width: 120px;
-    }
-
-    .namesBox {
-      margin-top: 14px;
-      padding: 12px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-    textarea {
-      width: 100%;
-      min-height: 120px;
-      resize: vertical;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.25);
-      color: #e9eefc;
-      padding: 10px;
-      font-weight: 600;
-      outline: none;
-      box-sizing: border-box;
-    }
-    label { display: inline-flex; gap: 10px; align-items: center; font-size: 13px; opacity: .85; }
-    input[type="checkbox"] { transform: scale(1.15); }
-
-    canvas#confetti {
-      position: absolute;
-      inset: 0;
+    /* Prismatic edge highlight */
+    .result-card::after {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        135deg,
+        rgba(255,255,255,.08) 0%,
+        transparent 40%,
+        rgba(255,255,255,.04) 100%
+      );
       pointer-events: none;
     }
 
-    .shake { animation: shake 650ms ease-in-out; }
-    @keyframes shake {
-      0% { transform: translateX(0); }
-      10% { transform: translateX(-6px); }
-      20% { transform: translateX(6px); }
-      30% { transform: translateX(-5px); }
-      40% { transform: translateX(5px); }
-      50% { transform: translateX(-4px); }
-      60% { transform: translateX(4px); }
-      70% { transform: translateX(-3px); }
-      80% { transform: translateX(3px); }
-      90% { transform: translateX(-2px); }
-      100% { transform: translateX(0); }
+    .result-eyebrow {
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 14px;
+    }
+    .result-name {
+      font-size: 58px; font-weight: 800;
+      letter-spacing: -2px; line-height: 1;
+      min-height: 62px;
+      background: linear-gradient(150deg, #fff 30%, rgba(255,255,255,.7) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative; z-index: 1;
+    }
+    .result-sub {
+      font-size: 15px; font-weight: 400;
+      color: var(--text2);
+      margin-top: 14px;
+      min-height: 20px;
+      position: relative; z-index: 1;
     }
 
-    .tiny {
-      margin-top: 10px;
-      opacity: .65;
-      font-size: 12px;
-      line-height: 1.35;
+    canvas#confetti {
+      position: absolute; inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+    }
+
+    /* ─── Primary CTA button (iOS 26 large) ─────────────────── */
+    .spin-btn {
+      width: 100%; max-width: 420px;
+      height: 66px;
+      appearance: none; border: none;
+      border-radius: 22px;
+      background: linear-gradient(160deg, #1a8fff 0%, #0060df 100%);
+      color: #fff;
+      font-size: 20px; font-weight: 700;
+      letter-spacing: -.3px;
+      cursor: pointer;
+      position: relative; overflow: hidden;
+      box-shadow:
+        0 10px 36px rgba(10,132,255,.45),
+        inset 0 1.5px 0 rgba(255,255,255,.25),
+        inset 0 -1px 0 rgba(0,0,50,.2);
+      transition: transform .1s cubic-bezier(.4,0,.2,1),
+                  box-shadow .2s, opacity .2s;
+    }
+    .spin-btn::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,.18) 0%,
+        transparent 55%
+      );
+    }
+    .spin-btn:active {
+      transform: scale(.97);
+      box-shadow: 0 4px 18px rgba(10,132,255,.3);
+    }
+    .spin-btn:disabled {
+      opacity: .45; transform: none; cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* ─── Bottom sheet ──────────────────────────────────────── */
+    .sheet-wrap {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      z-index: 20;
+      transform: translateY(calc(100% - 58px - var(--safe-b)));
+      transition: transform .42s cubic-bezier(.32,.72,0,1);
+      will-change: transform;
+    }
+    .sheet-wrap.open {
+      transform: translateY(0);
+    }
+
+    .sheet-puller {
+      padding: 10px 0 0;
+      text-align: center;
+      cursor: pointer;
+      /* extend touch area upward */
+      background: transparent;
+    }
+    .sheet-handle {
+      width: 38px; height: 5px;
+      border-radius: 3px;
+      background: rgba(255,255,255,.30);
+      margin: 0 auto;
+      transition: background .2s;
+    }
+    .sheet-wrap.open .sheet-handle {
+      background: rgba(255,255,255,.45);
+    }
+
+    .sheet-body {
+      background: rgba(22,22,24,.88);
+      backdrop-filter: blur(48px) saturate(200%);
+      -webkit-backdrop-filter: blur(48px) saturate(200%);
+      border-top: .5px solid rgba(255,255,255,.14);
+      border-radius: 22px 22px 0 0;
+      padding: 14px 20px calc(14px + var(--safe-b));
+    }
+
+    .sheet-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: .5px solid var(--sep);
+    }
+    .sheet-title {
+      font-size: 17px; font-weight: 600;
+    }
+    .reset-btn {
+      appearance: none; border: none;
+      border-radius: 50px;
+      padding: 6px 15px;
+      font-size: 15px; font-weight: 500;
+      background: rgba(255,255,255,.10);
+      color: var(--text2);
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+    }
+    .reset-btn:active { transform: scale(.96); }
+
+    /* ─── Toggle rows ────────────────────────────────────────── */
+    .toggles {
+      display: flex; gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .toggle-row {
+      flex: 1; min-width: 150px;
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,.07);
+      border: .5px solid rgba(255,255,255,.1);
+      border-radius: 14px;
+      padding: 10px 14px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .toggle-label {
+      font-size: 14px; font-weight: 500;
+      color: var(--text2); flex: 1;
+    }
+    /* iOS-style toggle */
+    .sw { position: relative; width: 51px; height: 31px; flex-shrink: 0; }
+    .sw input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .sw-track {
+      position: absolute; inset: 0;
+      border-radius: 15.5px;
+      background: rgba(120,120,128,.32);
+      transition: background .28s cubic-bezier(.4,0,.2,1);
+    }
+    .sw input:checked + .sw-track { background: #30D158; }
+    .sw-thumb {
+      position: absolute; top: 2px; left: 2px;
+      width: 27px; height: 27px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,.40);
+      transition: transform .28s cubic-bezier(.4,0,.2,1);
+    }
+    .sw input:checked ~ .sw-thumb { transform: translateX(20px); }
+
+    /* ─── Textarea ───────────────────────────────────────────── */
+    .names-input {
+      width: 100%;
+      background: rgba(0,0,0,.30);
+      border: .5px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      color: var(--text1);
+      padding: 12px 14px;
+      font-size: 16px; font-family: inherit; font-weight: 500;
+      resize: none; outline: none;
+      min-height: 110px; max-height: 160px;
+      -webkit-overflow-scrolling: touch;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .names-input:focus {
+      border-color: rgba(10,132,255,.65);
+      box-shadow: 0 0 0 3px rgba(10,132,255,.20);
+    }
+    .input-tip {
+      font-size: 12px; color: var(--text3);
+      margin-top: 7px; padding-left: 4px;
+    }
+
+    /* ─── Animations ─────────────────────────────────────────── */
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      12%  { transform: translateX(-5px) rotate(-.5deg); }
+      25%  { transform: translateX(5px)  rotate(.5deg);  }
+      37%  { transform: translateX(-4px); }
+      50%  { transform: translateX(4px);  }
+      62%  { transform: translateX(-3px); }
+      75%  { transform: translateX(3px);  }
+      87%  { transform: translateX(-1px); }
+    }
+    .shake { animation: shake .6s cubic-bezier(.4,0,.2,1); }
+
+    @keyframes namePop {
+      0%   { transform: scale(.88); opacity: .5; }
+      60%  { transform: scale(1.06); }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+    .name-pop { animation: namePop .07s ease-out; }
+
+    @keyframes winnerIn {
+      0%   { transform: scale(.65); opacity: 0; }
+      65%  { transform: scale(1.10); }
+      82%  { transform: scale(.95); }
+      100% { transform: scale(1);  opacity: 1; }
+    }
+    .winner-in { animation: winnerIn .5s cubic-bezier(.175,.885,.32,1.275); }
+
+    /* ─── iPad responsive ────────────────────────────────────── */
+    @media (min-width: 768px) {
+      .stage { padding: 0 48px 16px; }
+      .result-card {
+        max-width: 560px;
+        padding: 52px 44px 48px;
+      }
+      .result-name { font-size: 76px; min-height: 80px; }
+      .spin-btn { max-width: 560px; height: 72px; font-size: 21px; }
+      .sheet-wrap {
+        left: 50%; right: auto;
+        width: 100%; max-width: 580px;
+        transform: translateX(-50%) translateY(calc(100% - 58px - var(--safe-b)));
+      }
+      .sheet-wrap.open {
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    /* ─── iPad landscape: sidebar layout ────────────────────── */
+    @media (min-width: 1024px) {
+      .shell { flex-direction: row; overflow: hidden; }
+
+      .navbar { display: none; }
+
+      .stage {
+        flex: 1; max-width: none;
+        padding: 60px 60px 60px 80px;
+        justify-content: center; align-items: flex-start;
+      }
+      .stage > * { align-self: center; }
+
+      /* Sidebar replaces bottom sheet */
+      .sheet-wrap {
+        position: relative;
+        transform: none !important;
+        left: auto; right: auto;
+        width: 360px; flex-shrink: 0;
+        display: flex; flex-direction: column;
+      }
+      .sheet-puller { display: none; }
+      .sheet-body {
+        flex: 1;
+        background: rgba(22,22,24,.72);
+        backdrop-filter: blur(48px) saturate(200%);
+        -webkit-backdrop-filter: blur(48px) saturate(200%);
+        border-top: none;
+        border-left: .5px solid rgba(255,255,255,.12);
+        border-radius: 0;
+        padding: calc(var(--safe-t) + 24px) 24px
+                 calc(var(--safe-b) + 24px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .sheet-header {
+        padding-top: 8px;
+      }
+      .names-input {
+        max-height: 240px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="app" id="app">
-    <canvas id="confetti"></canvas>
-    <h1>Wie mag beginnen?</h1>
-    <div class="sub">Druk op “Draai” en hij kiest random. Pas namen aan als je wil.</div>
+  <!-- Animated gradient background -->
+  <div class="bg"></div>
 
-    <div class="result" id="resultBox">
-      <p class="name" id="pickedName">—</p>
-      <p class="hint" id="pickedHint">Klaar? Draai maar.</p>
+  <div class="shell" id="app">
+
+    <!-- ── Navigation bar ──────────────────────────────── -->
+    <div class="navbar">
+      <span class="navbar-title">Wie mag beginnen?</span>
     </div>
 
-    <div class="row">
-      <button id="spinBtn">🎲 Draai</button>
-      <button class="ghost" id="resetBtn" title="Reset naar standaard">Reset</button>
-    </div>
+    <!-- ── Main stage ──────────────────────────────────── -->
+    <div class="stage">
 
-    <div class="namesBox">
-      <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
-        <label><input type="checkbox" id="noRepeat" checked> Niet 2x dezelfde achter elkaar</label>
-        <label><input type="checkbox" id="sound"> Geluid</label>
+      <!-- Result card -->
+      <div class="result-card" id="resultCard">
+        <canvas id="confetti"></canvas>
+        <div class="result-eyebrow">Beurt voor</div>
+        <div class="result-name" id="pickedName">—</div>
+        <div class="result-sub"  id="pickedHint">Klaar? Draai maar.</div>
       </div>
-      <textarea id="namesInput" spellcheck="false">Mama
+
+      <!-- Spin button -->
+      <button class="spin-btn" id="spinBtn">🎲&nbsp; Draai</button>
+
+    </div><!-- /stage -->
+
+    <!-- ── Bottom sheet / sidebar ──────────────────────── -->
+    <div class="sheet-wrap" id="sheetWrap">
+      <div class="sheet-puller" id="sheetPuller">
+        <div class="sheet-handle"></div>
+      </div>
+      <div class="sheet-body">
+        <div class="sheet-header">
+          <span class="sheet-title">Namen &amp; instellingen</span>
+          <button class="reset-btn" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="toggles">
+          <label class="toggle-row">
+            <span class="toggle-label">Niet herhalen</span>
+            <div class="sw">
+              <input type="checkbox" id="noRepeat" checked />
+              <div class="sw-track"></div>
+              <div class="sw-thumb"></div>
+            </div>
+          </label>
+          <label class="toggle-row">
+            <span class="toggle-label">Geluid</span>
+            <div class="sw">
+              <input type="checkbox" id="sound" />
+              <div class="sw-track"></div>
+              <div class="sw-thumb"></div>
+            </div>
+          </label>
+        </div>
+
+        <textarea class="names-input" id="namesInput"
+                  spellcheck="false" rows="6">Mama
 Papa
 Nora
 Indy</textarea>
-      <div class="tiny">Tip: zet 1 naam per regel. Lege regels worden genegeerd.</div>
-    </div>
-  </div>
+        <div class="input-tip">Één naam per regel • lege regels worden genegeerd</div>
+      </div>
+    </div><!-- /sheet-wrap -->
+
+  </div><!-- /shell -->
 
   <script>
+    "use strict";
+
     const DEFAULT_NAMES = ["Mama", "Papa", "Nora", "Indy"];
 
-    const app = document.getElementById("app");
-    const spinBtn = document.getElementById("spinBtn");
-    const resetBtn = document.getElementById("resetBtn");
+    // ── DOM refs ──────────────────────────────────────────────
+    const spinBtn    = document.getElementById("spinBtn");
+    const resetBtn   = document.getElementById("resetBtn");
     const namesInput = document.getElementById("namesInput");
-    const pickedNameEl = document.getElementById("pickedName");
-    const pickedHintEl = document.getElementById("pickedHint");
-    const noRepeatEl = document.getElementById("noRepeat");
-    const soundEl = document.getElementById("sound");
+    const nameEl     = document.getElementById("pickedName");
+    const hintEl     = document.getElementById("pickedHint");
+    const noRepeat   = document.getElementById("noRepeat");
+    const soundChk   = document.getElementById("sound");
+    const resultCard = document.getElementById("resultCard");
+    const sheetWrap  = document.getElementById("sheetWrap");
+    const sheetPuller= document.getElementById("sheetPuller");
 
+    // ── Sheet open/close (phone / small tablet) ───────────────
+    let sheetOpen = false;
+    function setSheet(open) {
+      sheetOpen = open;
+      sheetWrap.classList.toggle("open", open);
+    }
+    sheetPuller.addEventListener("click", () => setSheet(!sheetOpen));
+    document.addEventListener("click", e => {
+      if (sheetOpen &&
+          !sheetWrap.contains(e.target) &&
+          e.target !== spinBtn) {
+        setSheet(false);
+      }
+    });
+
+    // ── Confetti canvas ───────────────────────────────────────
     const canvas = document.getElementById("confetti");
-    const ctx = canvas.getContext("2d");
-    let confettiPieces = [];
-    let confettiActive = false;
-    let lastPick = null;
+    const ctx    = canvas.getContext("2d");
+    let pieces   = [];
+    let active   = false;
 
     function resizeCanvas() {
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.floor(app.clientWidth * dpr);
-      canvas.height = Math.floor(app.clientHeight * dpr);
-      canvas.style.width = app.clientWidth + "px";
-      canvas.style.height = app.clientHeight + "px";
+      const dpr = devicePixelRatio || 1;
+      canvas.width  = Math.floor(resultCard.clientWidth  * dpr);
+      canvas.height = Math.floor(resultCard.clientHeight * dpr);
+      canvas.style.width  = resultCard.clientWidth  + "px";
+      canvas.style.height = resultCard.clientHeight + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
+    // ── Web Audio beep ────────────────────────────────────────
     let audioCtx = null;
-    function beep(freq = 880, duration = 0.07) {
-      if (!soundEl.checked) return;
+    function beep(freq = 880, dur = .07) {
+      if (!soundChk.checked) return;
       try {
-        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        audioCtx = audioCtx ||
+          new (window.AudioContext || window.webkitAudioContext)();
         const o = audioCtx.createOscillator();
         const g = audioCtx.createGain();
-        o.type = "square";
+        o.type = "sine";
         o.frequency.value = freq;
-        g.gain.value = 0.02;
-        o.connect(g);
-        g.connect(audioCtx.destination);
+        g.gain.value = .025;
+        o.connect(g); g.connect(audioCtx.destination);
         o.start();
-        setTimeout(() => { o.stop(); }, duration * 1000);
-      } catch (e) {}
+        const t = audioCtx.currentTime + dur;
+        g.gain.exponentialRampToValueAtTime(.001, t);
+        o.stop(t);
+      } catch (_) {}
     }
+
+    // ── Helpers ───────────────────────────────────────────────
+    let lastPick = null;
 
     function getNames() {
-      const lines = namesInput.value
-        .split("\n")
-        .map(s => s.trim())
-        .filter(Boolean);
-
-      const seen = new Set();
-      const uniq = [];
-      for (const n of lines) {
-        const key = n.toLowerCase();
-        if (!seen.has(key)) {
-          seen.add(key);
-          uniq.push(n);
-        }
+      const seen = new Set(), out = [];
+      for (const n of namesInput.value.split("\n").map(s => s.trim()).filter(Boolean)) {
+        const k = n.toLowerCase();
+        if (!seen.has(k)) { seen.add(k); out.push(n); }
       }
-      return uniq;
-    }
-
-    function setDefaultNames() {
-      namesInput.value = DEFAULT_NAMES.join("\n");
+      return out;
     }
 
     function pickRandom(names) {
       if (!names.length) return null;
-      if (!noRepeatEl.checked || names.length === 1 || lastPick == null) {
+      if (!noRepeat.checked || names.length === 1 || lastPick == null)
         return names[Math.floor(Math.random() * names.length)];
-      }
-      let candidate = lastPick;
-      let guard = 0;
-      while (candidate === lastPick && guard < 50) {
-        candidate = names[Math.floor(Math.random() * names.length)];
-        guard++;
-      }
-      return candidate;
+      let c = lastPick, g = 0;
+      while (c === lastPick && g++ < 50)
+        c = names[Math.floor(Math.random() * names.length)];
+      return c;
     }
 
-    function animatePick(finalName) {
+    // ── Spin animation ────────────────────────────────────────
+    function animatePick(final) {
       const names = getNames();
       const steps = Math.min(18, Math.max(8, names.length * 2));
       let i = 0;
 
       spinBtn.disabled = true;
-      pickedHintEl.textContent = "Aan het draaien...";
-      app.classList.remove("shake");
-      void app.offsetWidth;
-      app.classList.add("shake");
+      hintEl.textContent = "Aan het draaien…";
+
+      resultCard.classList.remove("shake");
+      void resultCard.offsetWidth;
+      resultCard.classList.add("shake");
 
       const timer = setInterval(() => {
         const n = names[Math.floor(Math.random() * names.length)];
-        pickedNameEl.textContent = n || "—";
-        beep(600 + (i * 20), 0.03);
+        nameEl.textContent = n || "—";
+        nameEl.classList.remove("name-pop");
+        void nameEl.offsetWidth;
+        nameEl.classList.add("name-pop");
+        beep(620 + i * 28, .04);
         i++;
         if (i >= steps) {
           clearInterval(timer);
-          pickedNameEl.textContent = finalName;
-          pickedHintEl.textContent = "Begint maar. Geen discussies 😄";
-          beep(1200, 0.08);
+          nameEl.textContent = final;
+          nameEl.classList.remove("name-pop", "winner-in");
+          void nameEl.offsetWidth;
+          nameEl.classList.add("winner-in");
+          hintEl.textContent = "Begint maar. Geen discussies 😄";
+          beep(1100, .13);
+          setTimeout(() => beep(1420, .10), 160);
           launchConfetti();
           spinBtn.disabled = false;
         }
       }, 70);
     }
 
+    // ── Confetti ──────────────────────────────────────────────
+    const COLORS = [
+      "#0A84FF","#30D158","#FF9F0A","#FF453A",
+      "#BF5AF2","#5AC8FA","#FFD60A","#FF6961"
+    ];
+
     function launchConfetti() {
-      confettiPieces = [];
-      confettiActive = true;
-
-      const w = app.clientWidth;
-      const h = app.clientHeight;
-      const count = 140;
-
-      for (let i = 0; i < count; i++) {
-        confettiPieces.push({
+      pieces = []; active = true;
+      const w = resultCard.clientWidth;
+      const h = resultCard.clientHeight;
+      for (let i = 0; i < 130; i++) {
+        pieces.push({
           x: Math.random() * w,
-          y: -10 - Math.random() * h * 0.3,
-          vx: (Math.random() - 0.5) * 2.6,
-          vy: 2.2 + Math.random() * 3.2,
-          r: 2 + Math.random() * 4,
-          rot: Math.random() * Math.PI,
-          vr: (Math.random() - 0.5) * 0.2,
-          life: 220 + Math.random() * 120
+          y: -8 - Math.random() * h * .25,
+          vx: (Math.random() - .5) * 2.8,
+          vy: 2.4 + Math.random() * 3.2,
+          r:  3 + Math.random() * 4,
+          rot: Math.random() * Math.PI * 2,
+          vr: (Math.random() - .5) * .18,
+          life: 200 + Math.random() * 130,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          round: Math.random() > .5
         });
       }
-      requestAnimationFrame(confettiTick);
+      requestAnimationFrame(tick);
     }
 
-    function confettiTick() {
-      if (!confettiActive) return;
-      const w = app.clientWidth;
-      const h = app.clientHeight;
-
+    function tick() {
+      if (!active) return;
+      const w = resultCard.clientWidth;
+      const h = resultCard.clientHeight;
       ctx.clearRect(0, 0, w, h);
-
-      confettiPieces.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
+      pieces.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
         p.rot += p.vr;
-        p.vx *= 0.995;
-        p.vy *= 0.998;
+        p.vx *= .995; p.vy *= .998;
         p.life -= 1;
-
         if (p.x < -20) p.x = w + 20;
         if (p.x > w + 20) p.x = -20;
-
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(p.rot);
-        ctx.globalAlpha = Math.max(0, Math.min(1, p.life / 180));
-        ctx.fillStyle = `hsl(${Math.floor((p.x / w) * 360)}, 90%, 60%)`;
-        ctx.fillRect(-p.r, -p.r, p.r * 2.2, p.r * 1.3);
+        ctx.globalAlpha = Math.max(0, Math.min(1, p.life / 160));
+        ctx.fillStyle = p.color;
+        if (p.round) {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillRect(-p.r, -p.r * .6, p.r * 2, p.r * 1.2);
+        }
         ctx.restore();
       });
-
-      confettiPieces = confettiPieces.filter(p => p.y < h + 30 && p.life > 0);
-
-      if (confettiPieces.length === 0) {
-        confettiActive = false;
+      pieces = pieces.filter(p => p.y < h + 30 && p.life > 0);
+      if (!pieces.length) {
+        active = false;
         ctx.clearRect(0, 0, w, h);
         return;
       }
-      requestAnimationFrame(confettiTick);
+      requestAnimationFrame(tick);
     }
 
+    // ── Events ────────────────────────────────────────────────
     spinBtn.addEventListener("click", () => {
       const names = getNames();
       if (!names.length) {
-        pickedNameEl.textContent = "—";
-        pickedHintEl.textContent = "Zet eerst wat namen in het vak 🙂";
+        nameEl.textContent = "—";
+        hintEl.textContent = "Zet eerst namen in het lijstje 🙂";
         return;
       }
-      const finalName = pickRandom(names);
-      lastPick = finalName;
-      animatePick(finalName);
+      const final = pickRandom(names);
+      lastPick = final;
+      animatePick(final);
     });
 
     resetBtn.addEventListener("click", () => {
-      setDefaultNames();
+      namesInput.value = DEFAULT_NAMES.join("\n");
       lastPick = null;
-      pickedNameEl.textContent = "—";
-      pickedHintEl.textContent = "Klaar? Draai maar.";
+      nameEl.textContent = "—";
+      hintEl.textContent = "Klaar? Draai maar.";
     });
-
-    setDefaultNames();
   </script>
 </body>
 </html>
